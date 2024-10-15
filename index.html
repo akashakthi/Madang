@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Crush</title>
+    <link rel="stylesheet" href="candy.css"> <!-- Menghubungkan file CSS eksternal -->
+    <script src="candy.js" defer></script>  <!-- Menghubungkan file JavaScript eksternal -->
+</head>
+<body>
+    <!-- Menu untuk memulai game -->
+    <div id="menu">
+        <h1>Candy Crush</h1>
+        <input type="text" id="username" placeholder="Enter your name" required> <!-- Input untuk nama pemain -->
+        <button id="startButton">Start Game</button> <!-- Tombol untuk memulai permainan -->
+    </div>
+
+    <!-- Game utama, disembunyikan sebelum permainan dimulai -->
+    <div id="game" style="display:none;">
+        <h1>Score: <span id="score">0</span></h1> <!-- Menampilkan skor permainan -->
+        <h2>Time Left: <span id="timer">60</span> seconds</h2> <!-- Menampilkan timer permainan -->
+        <div id="board"></div> <!-- Papan permainan yang akan diisi dengan gambar candy -->
+    </div>
+
+    <!-- Menu untuk menampilkan skor tertinggi setelah game selesai -->
+    <div id="highscoreMenu" style="display:none;">
+        <h1>High Scores</h1>
+        <ul id="highscoreList"></ul> <!-- Daftar skor tertinggi -->
+        <button id="backButton">Back to Menu</button> <!-- Tombol untuk kembali ke menu utama -->
+    </div>
+</body>
+</html>
