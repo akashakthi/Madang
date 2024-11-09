@@ -1,81 +1,78 @@
-// Definisi variabel permainan
-var candies = ["Blue", "Orange", "Green", "Yellow", "Red", "Purple"]; // Warna-warna candy
-var board = []; // Papan permainan (array 2D)
-var rows = 9;
-var columns = 9;
-var score = 0; // Skor pemain
-var timer = 60; // Timer (dalam detik)
-var timerInterval; // Interval untuk timer
-var highScores = []; // Array untuk menyimpan skor tertinggi
+// Game variables
+const candies = ["Blue", "Orange", "Green", "Yellow", "Red", "Purple", "Pink"];
+let board = [];
+const rows = 9;
+const columns = 9;
+let score = 0;
+let timer = 60;
+let timerInterval;
+let highScores = [];
 
-var currTile; // Tile saat ini yang sedang di-drag
-var otherTile; // Tile lain yang dijadikan tujuan drag
+let currTile;
+let otherTile;
 
-// Inisialisasi event listener saat halaman dimuat
+// Load the game when the window loads
 window.onload = function () {
-    document.getElementById("startButton").addEventListener("click", startMainGame); // Memulai game
-    document.getElementById("backButton").addEventListener("click", backToMenu); // Kembali ke menu
+    document.getElementById("startButton").addEventListener("click", startMainGame);
+    document.getElementById("backButton").addEventListener("click", backToMenu);
 };
 
-// Fungsi untuk memulai permainan utama
+// Start the main game
 function startMainGame() {
-    const username = document.getElementById("username").value; // Ambil nama pengguna
+    const username = document.getElementById("username").value;
     if (!username) {
-        alert("Please enter your name!"); // Cek jika nama tidak diisi
+        alert("Please enter your name!");
         return;
     }
 
-    // Sembunyikan menu dan tampilkan papan permainan
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
 
-    // Reset skor dan timer
     score = 0;
     timer = 60;
     document.getElementById("score").innerText = score;
     document.getElementById("timer").innerText = timer;
 
-    startGame(); // Mulai logika permainan
+    startGame();
 
-    // Set timer untuk menghitung mundur
+    // Start the game timer
     timerInterval = setInterval(function () {
         timer--;
         document.getElementById("timer").innerText = timer;
 
         if (timer <= 0) {
-            clearInterval(timerInterval); // Hentikan timer ketika waktu habis
-            endGame(username); // Akhiri permainan
+            clearInterval(timerInterval);
+            endGame(username);
         }
     }, 1000);
 }
 
-// Fungsi untuk mengakhiri permainan dan menyimpan skor
+// End the game and display high scores
 function endGame(username) {
     clearInterval(timerInterval);
     document.getElementById("game").style.display = "none";
     document.getElementById("highscoreMenu").style.display = "block";
 
-    // Simpan skor pemain ke dalam array highScores
     highScores.push({ name: username, score: score });
-    highScores.sort((a, b) => b.score - a.score); // Urutkan skor dari terbesar
+    highScores.sort((a, b) => b.score - a.score);
 
     const highscoreList = document.getElementById("highscoreList");
     highscoreList.innerHTML = '';
     highScores.forEach(entry => {
         const li = document.createElement("li");
         li.innerText = `${entry.name}: ${entry.score}`;
-        highscoreList.appendChild(li); // Tampilkan skor dalam daftar
+        highscoreList.appendChild(li);
     });
 }
 
-// Fungsi untuk kembali ke menu utama
+// Go back to the main menu
 function backToMenu() {
     document.getElementById("highscoreMenu").style.display = "none";
     document.getElementById("menu").style.display = "block";
-    document.getElementById("username").value = ""; // Reset input nama
+    document.getElementById("username").value = "";
 }
 
-// Fungsi untuk memulai papan permainan
+// Initialize the game board
 function startGame() {
     board = [];
     document.getElementById("board").innerHTML = '';
@@ -87,7 +84,7 @@ function startGame() {
             tile.id = r.toString() + "-" + c.toString();
             tile.src = "./images/" + randomCandy() + ".png";
 
-            // Tambahkan event listener untuk drag-and-drop
+            // Set up drag and drop events
             tile.addEventListener("dragstart", dragStart);
             tile.addEventListener("dragover", dragOver);
             tile.addEventListener("dragenter", dragEnter);
@@ -99,53 +96,127 @@ function startGame() {
         }
         board.push(row);
     }
+
+    crushCandy(); // Start by crushing initial matches
 }
 
-// Fungsi untuk mendapatkan candy acak
+// Return a random candy image
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)];
 }
 
-// Fungsi drag-and-drop
-function dragStart() {
-    currTile = this;
-}
-
-function dragOver(e) {
-    e.preventDefault();
-}
-
-function dragEnter(e) {
-    e.preventDefault();
-}
-
-function dragDrop() {
-    otherTile = this;
-}
-
+// Drag and drop event handlers
+function dragStart() { currTile = this; }
+function dragOver(e) { e.preventDefault(); }
+function dragEnter(e) { e.preventDefault(); }
+function dragDrop() { otherTile = this; }
 function dragEnd() {
-    if (currTile.src.includes("blank") || otherTile.src.includes("blank")) {
-        return;
-    }
-
-    let currCoords = currTile.id.split("-");
-    let otherCoords = otherTile.id.split("-");
+    if (!otherTile || currTile.src.includes("blank") || otherTile.src.includes("blank")) return;
 
     let validMove = checkValid();
-    if (!validMove) {
+    if (!validMove) return;
+
+    crushCandy(); // Crush candies after a valid move
+}
+
+// Check if the move is valid
+function checkValid() {
+    let [r1, c1] = currTile.id.split("-").map(Number);
+    let [r2, c2] = otherTile.id.split("-").map(Number);
+    let isAdjacent = Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+
+    if (isAdjacent) {
+        // Swap the images
+        let temp = currTile.src;
         currTile.src = otherTile.src;
-        otherTile.src = currTile.src;
-    } else {
-        crushCandy(); // Hancurkan candy setelah validasi
+        otherTile.src = temp;
+        return checkMatches();
+    }
+    return false;
+}
+
+// Check for matching candies (rows and columns)
+function checkMatches() {
+    // Check rows for matches
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns - 2; c++) {
+            if (board[r][c].src === board[r][c+1].src && board[r][c+1].src === board[r][c+2].src && !board[r][c].src.includes("blank")) {
+                return true;
+            }
+        }
+    }
+
+    // Check columns for matches
+    for (let c = 0; c < columns; c++) {
+        for (let r = 0; r < rows - 2; r++) {
+            if (board[r][c].src === board[r+1][c].src && board[r+1][c].src === board[r+2][c].src && !board[r][c].src.includes("blank")) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+// Crush candies in rows or columns of three or more
+function crushCandy() {
+    // Crush row matches
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns - 2; c++) {
+            if (board[r][c].src === board[r][c+1].src && board[r][c+1].src === board[r][c+2].src && !board[r][c].src.includes("blank")) {
+                board[r][c].src = "images/blank.png";
+                board[r][c+1].src = "images/blank.png";
+                board[r][c+2].src = "images/blank.png";
+                score += 10;
+                document.getElementById("score").innerText = score;
+            }
+        }
+    }
+
+    // Crush column matches
+    for (let c = 0; c < columns; c++) {
+        for (let r = 0; r < rows - 2; r++) {
+            if (board[r][c].src === board[r+1][c].src && board[r+1][c].src === board[r+2][c].src && !board[r][c].src.includes("blank")) {
+                board[r][c].src = "images/blank.png";
+                board[r+1][c].src = "images/blank.png";
+                board[r+2][c].src = "images/blank.png";
+                score += 10;
+                document.getElementById("score").innerText = score;
+            }
+        }
+    }
+
+    // Collapse candies into empty spaces
+    collapseCandies();
+}
+
+// Collapse candies into empty spaces
+function collapseCandies() {
+    for (let c = 0; c < columns; c++) {
+        let blankFound = false;
+        for (let r = rows - 1; r >= 0; r--) {
+            if (board[r][c].src.includes("blank")) {
+                blankFound = true;
+            } else if (blankFound) {
+                let blankTile = board[r + 1][c];
+                blankTile.src = board[r][c].src;
+                board[r][c].src = "images/blank.png";
+            }
+        }
+    }
+
+    // Fill empty spaces with new candies
+    for (let c = 0; c < columns; c++) {
+        for (let r = 0; r < rows; r++) {
+            if (board[r][c].src.includes("blank")) {
+                board[r][c].src = "images/" + randomCandy() + ".png";
+            }
+        }
+    }
+
+    // Continue crushing if matches exist
+    if (checkMatches()) {
+        setTimeout(crushCandy, 200);
     }
 }
 
-// Fungsi untuk menghancurkan candy jika ada yang cocok
-function crushCandy() {
-    // Cek dan hancurkan candy secara horizontal dan vertikal
-}
-
-// Fungsi untuk memeriksa apakah pergerakan valid
-function checkValid() {
-    // Logika untuk memeriksa apakah gerakan candy valid
-}

@@ -3,30 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candy Crush</title>
-    <link rel="stylesheet" href="candy.css"> <!-- Menghubungkan file CSS eksternal -->
-    <script src="candy.js" defer></script>  <!-- Menghubungkan file JavaScript eksternal -->
+    <title>Candy Crush Game with BGM</title>
+    <link rel="stylesheet" href="candy.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="candy.js" defer></script>
 </head>
 <body>
-    <!-- Menu untuk memulai game -->
+    <!-- Menu for starting the game -->
     <div id="menu">
         <h1>Candy Crush</h1>
-        <input type="text" id="username" placeholder="Enter your name" required> <!-- Input untuk nama pemain -->
-        <button id="startButton">Start Game</button> <!-- Tombol untuk memulai permainan -->
+        <input type="text" id="username" placeholder="Enter your name" required>
+        <button id="startButton">Start Game</button>
     </div>
 
-    <!-- Game utama, disembunyikan sebelum permainan dimulai -->
-    <div id="game" style="display:none;">
-        <h1>Score: <span id="score">0</span></h1> <!-- Menampilkan skor permainan -->
-        <h2>Time Left: <span id="timer">60</span> seconds</h2> <!-- Menampilkan timer permainan -->
-        <div id="board"></div> <!-- Papan permainan yang akan diisi dengan gambar candy -->
+    <!-- Main Game (hidden initially) -->
+    <div id="game" style="display: none;">
+        <h1>Score: <span id="score">0</span></h1>
+        <h2>Time Left: <span id="timer">60</span> seconds</h2>
+        <div id="board"></div>
     </div>
 
-    <!-- Menu untuk menampilkan skor tertinggi setelah game selesai -->
-    <div id="highscoreMenu" style="display:none;">
+    <!-- High Score Menu (hidden initially) -->
+    <div id="highscoreMenu" style="display: none;">
         <h1>High Scores</h1>
-        <ul id="highscoreList"></ul> <!-- Daftar skor tertinggi -->
-        <button id="backButton">Back to Menu</button> <!-- Tombol untuk kembali ke menu utama -->
+        <ul id="highscoreList"></ul>
+        <button id="backButton">Back to Menu</button>
     </div>
+
+    <!-- Hidden YouTube Player for Background Music -->
+    <div id="bgmPlayer" style="display: none;"></div>
+
+    <script>
+        let bgmPlayer;
+
+        // Load YouTube API and create the player
+        function onYouTubeIframeAPIReady() {
+            bgmPlayer = new YT.Player('bgmPlayer', {
+                height: '0',
+                width: '0',
+                videoId: '1BlTQXARaDs', // Video ID for YouTube video
+                playerVars: {
+                    'autoplay': 0, // Initially set to 0; we will start it on button click
+                    'loop': 1,
+                    'playlist': '1BlTQXARaDs',
+                    'controls': 0,
+                    'showinfo': 0,
+                    'modestbranding': 1,
+                    'iv_load_policy': 3
+                },
+                events: {
+                    'onReady': function(event) {
+                        event.target.setVolume(30); // Set volume
+                    }
+                }
+            });
+        }
+
+        // Start the game and play BGM
+        document.getElementById("startButton").addEventListener("click", function () {
+            const username = document.getElementById("username").value;
+            if (!username) {
+                alert("Please enter your name!");
+                return;
+            }
+
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("game").style.display = "block";
+
+            // Start the background music after interaction
+            if (bgmPlayer) {
+                bgmPlayer.playVideo();
+            }
+
+            // Initialize the game timer, score, etc.
+            startMainGame();
+        });
+
+        // Game functions (add your other game logic here, e.g., startMainGame function)
+    </script>
 </body>
 </html>
