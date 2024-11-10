@@ -12,13 +12,20 @@ let currTile;
 let otherTile;
 
 // Load the game when the window loads
+// Load the game when the window loads
 window.onload = function () {
+    document.getElementById("menu").style.display = "block"; // Show main menu initially
+    document.getElementById("game").style.display = "none";
+    document.getElementById("highscoreMenu").style.display = "none";
+
     document.getElementById("startButton").addEventListener("click", startMainGame);
     document.getElementById("backButton").addEventListener("click", backToMenu);
 };
 
 // Start the main game
 function startMainGame() {
+    clearInterval(timerInterval); // Ensure any previous timer is cleared before starting a new game
+
     const username = document.getElementById("username").value;
     if (!username) {
         alert("Please enter your name!");
@@ -35,7 +42,7 @@ function startMainGame() {
 
     startGame();
 
-    // Start the game timer
+    // Start the game timer, only once per game start
     timerInterval = setInterval(function () {
         timer--;
         document.getElementById("timer").innerText = timer;
@@ -49,15 +56,20 @@ function startMainGame() {
 
 // End the game and display high scores
 function endGame(username) {
-    clearInterval(timerInterval);
+    clearInterval(timerInterval); // Clear timer to prevent it from running again
     document.getElementById("game").style.display = "none";
     document.getElementById("highscoreMenu").style.display = "block";
 
+    // Store the player's score in the highScores array
     highScores.push({ name: username, score: score });
-    highScores.sort((a, b) => b.score - a.score);
+    highScores.sort((a, b) => b.score - a.score); // Sort scores in descending order
 
     const highscoreList = document.getElementById("highscoreList");
+
+    // Clear the high score list before adding new entries
     highscoreList.innerHTML = '';
+
+    // Display updated high scores
     highScores.forEach(entry => {
         const li = document.createElement("li");
         li.innerText = `${entry.name}: ${entry.score}`;
@@ -65,12 +77,16 @@ function endGame(username) {
     });
 }
 
-// Go back to the main menu
+// Go back to the main menu and reset the display
 function backToMenu() {
     document.getElementById("highscoreMenu").style.display = "none";
     document.getElementById("menu").style.display = "block";
-    document.getElementById("username").value = "";
+    document.getElementById("username").value = ""; // Clear the username input
+
+    // Optionally reset score and other game state variables here if needed
 }
+
+
 
 // Initialize the game board
 function startGame() {
@@ -219,4 +235,3 @@ function collapseCandies() {
         setTimeout(crushCandy, 200);
     }
 }
-
